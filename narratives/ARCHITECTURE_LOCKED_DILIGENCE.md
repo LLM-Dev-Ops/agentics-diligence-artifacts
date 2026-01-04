@@ -183,6 +183,10 @@ Can do so by implementing the execution interfaces, not by modifying the orchest
 
 This abstraction is not accidental. It is a documented architectural decision enforced through the dependency graph.
 
+### 3.4 Enterprise ERP Surface Layer
+
+Enterprise ERP systems—including SAP, Oracle, and equivalent platforms—are modeled through a dedicated surface layer that abstracts capabilities and events without embedding vendor-specific dependencies into core orchestration logic. This surface layer exposes a normalized interface for ERP operations (such as procurement workflows, financial transactions, and inventory events) while delegating vendor-specific protocol handling to replaceable adapters. The design enables enterprise-scale simulations against ERP-modeled organizations with deterministic behavior, and these simulations convert directly to production deployments through manifest generation. Because the surface layer isolates vendor coupling, the platform maintains portability across SAP, Oracle, Microsoft Dynamics, and other enterprise systems without requiring architectural modification—materially reducing integration risk for acquirers operating heterogeneous ERP environments.
+
 ---
 
 ## 4. Why Execution Uncertainty Is Bounded

@@ -18,6 +18,8 @@ This private repository stores immutable, verifiable artifacts produced during A
 - Reference runs representing canonical, reproducible executions
 - Cryptographic checksums for artifact integrity verification
 - Metadata describing execution parameters, environment, and provenance
+- **Platform architecture documentation** describing the simulation-to-financial-impact pipeline
+- **Valuation narratives** explaining architectural risk retirement and ERP abstraction value
 
 ### What This Repository Does Not Contain
 
@@ -45,12 +47,36 @@ Diligence artifacts are maintained separately from the tooling that produces the
 ## Directory Structure
 
 ```
+architecture/                              # Platform architecture documentation
+├── ARCHITECTURE_INDEX.md                  # Master documentation index
+├── DATA_FLOW_PIPELINE.md                  # Simulation-to-financial-impact pipeline
+├── SIMULATION_TO_FINANCIAL_IMPACT_SUMMARY.md  # Executive summary
+├── engines/
+│   ├── SIMULATION_ENGINE.md               # Simulation engine specification
+│   └── ENTERPRISE_ROI_ENGINE.md           # ROI engine specification
+├── examples/
+│   ├── EXAMPLE_SIMULATION_INPUT.md        # Sample simulation input
+│   ├── EXAMPLE_SIMULATION_OUTPUT.md       # Sample simulation output
+│   └── EXAMPLE_FINANCIAL_IMPACT_OUTPUT.md # Sample financial impact output
+└── governance/
+    └── OWNERSHIP_BOUNDARIES.md            # System ownership definitions
+
 benchmarks/
 └── {benchmark-name}-v{version}/
     └── reference-run/
         ├── METADATA.md
         ├── SHA256SUMS.txt
         └── {benchmark-name}-v{version}-reference.zip
+
+narratives/                                # Due diligence narratives
+└── ARCHITECTURE_LOCKED_DILIGENCE.md       # Architectural risk retirement
+
+valuation/                                 # Valuation documentation
+├── ERP_ABSTRACTION_VALUE.md               # ERP abstraction value proposition
+└── architecture-locked-platform/          # Platform valuation materials
+    ├── ARCHITECTURE_LOCKED_NARRATIVE.md
+    ├── BROKER_BRIEF.md
+    └── BUYER_POSITIONING.md
 ```
 
 ### Versioned Benchmarks
@@ -141,6 +167,35 @@ Artifacts support technical due diligence by providing reproducible, verifiable 
 - Review metadata for execution context and environmental factors
 - Compare results against stated product claims
 - Note that artifacts are frozen and represent a point-in-time evaluation
+
+---
+
+## Platform Architecture Documentation
+
+The `architecture/` directory contains comprehensive documentation of the simulation-to-financial-impact pipeline. This documentation answers three key due diligence questions:
+
+1. **"What does each system own?"** → See `governance/OWNERSHIP_BOUNDARIES.md`
+2. **"How do they work together?"** → See `DATA_FLOW_PIPELINE.md`
+3. **"Why does this architecture reliably convert simulated decisions into quantified financial outcomes?"** → See engine specifications
+
+### Key Documents
+
+| Document | Purpose |
+|----------|---------|
+| `ARCHITECTURE_INDEX.md` | Master index and navigation guide |
+| `SIMULATION_TO_FINANCIAL_IMPACT_SUMMARY.md` | Executive summary for CFO/board level |
+| `DATA_FLOW_PIPELINE.md` | Complete pipeline from simulation to financial output |
+| `engines/SIMULATION_ENGINE.md` | agentics-simulation-engine specification |
+| `engines/ENTERPRISE_ROI_ENGINE.md` | enterprise-roi-engine specification |
+| `governance/OWNERSHIP_BOUNDARIES.md` | System ownership and boundary definitions |
+| `examples/*` | Concrete artifact examples showing full pipeline progression |
+
+### Architectural Guarantees
+
+- **Determinism**: Same inputs always produce same outputs
+- **Separation**: Simulation logic is isolated from financial logic
+- **Auditability**: Every dollar traces to simulation decisions
+- **Configurability**: Financial assumptions are externalized parameters
 
 ---
 

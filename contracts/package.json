@@ -1,0 +1,15 @@
+{
+  "name": "@agentics/contracts",
+  "version": "1.0.0",
+  "description": "JSON Schema contracts for Agentics Diligence API",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./diligence/v1/request.schema.json": "./diligence/v1/request.schema.json",
+    "./diligence/v1/response.schema.json": "./diligence/v1/response.schema.json"
+  },
+  "files": [
+    "diligence/",
+    "index.js"
+  ]
+}

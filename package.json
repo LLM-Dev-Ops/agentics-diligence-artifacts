@@ -4,12 +4,17 @@
   "description": "Agentics Diligence Artifacts API",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "node src/test-validation.js"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "@agentics/contracts": "file:./contracts",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
   }
 }

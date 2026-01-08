@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://agentics.io/contracts/diligence/v1/response.schema.json",
+  "title": "Diligence API Response",
+  "description": "Schema for validating responses from the Agentics Diligence API",
+  "definitions": {
+    "executionProof": {
+      "type": "object",
+      "properties": {
+        "execution_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for this execution"
+        },
+        "layers_executed": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of processing layers that were executed"
+        },
+        "execution_graph": {
+          "type": "object",
+          "description": "Graph representation of execution flow",
+          "additionalProperties": true
+        }
+      },
+      "required": ["execution_id"],
+      "oneOf": [
+        { "required": ["layers_executed"] },
+        { "required": ["execution_graph"] }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "title": "HealthCheckResponse",
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "const": "healthy" },
+        "service": { "type": "string" },
+        "execution_id": { "type": "string", "format": "uuid" },
+        "layers_executed": { "type": "array", "items": { "type": "string" } },
+        "execution_graph": { "type": "object" }
+      },
+      "required": ["status", "service", "execution_id"],
+      "additionalProperties": false
+    },
+    {
+      "title": "IndexResponse",
+      "type": "object",
+      "properties": {
+        "service": { "type": "string" },
+        "version": { "type": "string" },
+        "description": { "type": "string" },
+        "endpoints": { "type": "object", "additionalProperties": { "type": "string" } },
+        "execution_id": { "type": "string", "format": "uuid" },
+        "layers_executed": { "type": "array", "items": { "type": "string" } },
+        "execution_graph": { "type": "object" }
+      },
+      "required": ["service", "version", "description", "endpoints", "execution_id"],
+      "additionalProperties": false
+    },
+    {
+      "title": "CategoryResponse",
+      "type": "object",
+      "properties": {
+        "category": { "type": "string" },
+        "files": { "type": "array", "items": { "type": "string" } },
+        "execution_id": { "type": "string", "format": "uuid" },
+        "layers_executed": { "type": "array", "items": { "type": "string" } },
+        "execution_graph": { "type": "object" }
+      },
+      "required": ["category", "files", "execution_id"],
+      "additionalProperties": false
+    },
+    {
+      "title": "ErrorResponse",
+      "type": "object",
+      "properties": {
+        "error": { "type": "string" },
+        "execution_id": { "type": "string", "format": "uuid" }
+      },
+      "required": ["error"],
+      "additionalProperties": false
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://agentics.io/contracts/diligence/v1/request.schema.json",
+  "title": "Diligence API Request",
+  "description": "Schema for validating incoming requests to the Agentics Diligence API",
+  "type": "object",
+  "properties": {
+    "method": {
+      "type": "string",
+      "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
+    },
+    "path": {
+      "type": "string",
+      "pattern": "^/v1/diligence/?$|^/v1/diligence/(architecture|benchmarks|narratives|valuation)$"
+    },
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["json"]
+        }
+      }
+    },
+    "headers": {
+      "type": "object",
+      "properties": {
+        "content-type": {
+          "type": "string"
+        },
+        "accept": {
+          "type": "string"
+        }
+      }
+    },
+    "body": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "object" }
+      ]
+    }
+  },
+  "required": ["method", "path"],
+  "additionalProperties": false
+}

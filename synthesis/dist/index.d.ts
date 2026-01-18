@@ -13,7 +13,9 @@
  *   LLM_BASE_URL - Optional custom endpoint
  *   LLM_MODEL - Optional model override
  */
-export { DecisionInput, SynthesisResult, validateDecisionInput } from './decision_input';
-export { synthesize } from './synthesizer';
-export { renderMarkdown, writeDecisionSummary } from './render_markdown';
+export { DecisionInput, SynthesisResult, LegacySynthesisResult, ExtractedEvidence, PolicyViolation, CostVariance, FailureRate, LatencyImpact, BindingConstraint, MicroDistribution, RecommendationDisposition, ExecutiveContext, DecisionFraming, Recommendation, RisksAndTradeoffs, Constraints, ERPResolution, DecisionDisplacement, MicroMacroNarrative, NextActions, validateDecisionInput, } from './decision_input';
+export { synthesize, synthesizeLegacy } from './synthesizer';
+export { renderMarkdown, renderLegacyMarkdown, writeDecisionSummary } from './render_markdown';
+export { extractEvidence, extractDecisionFraming, determineRecommendation, buildRecommendationStatement, extractRisksAndTradeoffs, detectConstraints, generateDecisionDisplacement, buildMicroMacroNarrative, } from './extraction';
+export { validateQuality, enforceQuality, enforceDeclarativeSentences, tightenRecommendation, enforceQualityOnObject, enforceRecommendationQuality, enforceRationaleQuality, enforceContextQuality, enforceExecutiveQuality, QualityViolation, QualityReport, } from './language_quality';
 //# sourceMappingURL=index.d.ts.map

@@ -1,10 +1,18 @@
 "use strict";
 /**
  * Canonical input structure for the synthesis layer.
- * Treats all upstream JSON outputs as opaque evidence.
+ * Implements Executive Decision Packet structure with deterministic extraction.
+ *
+ * Constraints:
+ * - Do NOT hallucinate data
+ * - Do NOT infer beyond simulation outputs
+ * - Prefer explicit "unknown" over assumption
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateDecisionInput = validateDecisionInput;
+// ============================================================================
+// VALIDATION
+// ============================================================================
 /**
  * Validates that input conforms to DecisionInput structure.
  */

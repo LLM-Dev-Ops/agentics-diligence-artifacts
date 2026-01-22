@@ -1,0 +1,42 @@
+{
+  "execution_ref": "660f9500-f39c-52e5-b827-557766551111",
+  "artifact_type": "decision_packet",
+  "reviewer": {
+    "id": "reviewer-exec-001",
+    "role": "executive",
+    "authority_level": "binding"
+  },
+  "decision": {
+    "outcome": "APPROVED",
+    "timestamp": "2026-01-22T11:00:00Z",
+    "conditions": [
+      {
+        "condition": "Update risk assessment section with Q4 compliance metrics",
+        "deadline": "2026-02-01T00:00:00Z"
+      },
+      {
+        "condition": "Obtain sign-off from Security team on implementation timeline"
+      }
+    ]
+  },
+  "review_scope": "full",
+  "artifact_summary": {
+    "title": "Q1 2026 Technology Investment Decision Packet",
+    "sections_reviewed": [
+      "executive_context",
+      "decision_framing",
+      "recommendation",
+      "risks_and_tradeoffs",
+      "constraints",
+      "erp_resolutions",
+      "next_actions"
+    ],
+    "key_metrics": {
+      "projected_savings": 2500000,
+      "implementation_cost": 750000,
+      "roi_percentage": 233,
+      "payback_months": 9
+    }
+  },
+  "source_system": "agentics-dev-platform"
+}

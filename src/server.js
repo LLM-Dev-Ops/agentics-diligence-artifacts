@@ -221,6 +221,7 @@ app.use('/v1/diligence/*', (req, res) => {
   });
 });
 
+// Server startup
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Agentics Diligence API listening on port ${PORT}`);
   console.log('Contract validation: ENABLED (strict mode, no coercion, no defaults)');

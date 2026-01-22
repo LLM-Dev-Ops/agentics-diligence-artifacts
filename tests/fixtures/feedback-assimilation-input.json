@@ -1,0 +1,72 @@
+{
+  "execution_ref": "550e8400-e29b-41d4-a716-446655440000",
+  "artifact_type": "decision_packet",
+  "reviewer": {
+    "id": "reviewer-001",
+    "role": "executive",
+    "expertise_areas": ["financial_analysis", "risk_assessment"]
+  },
+  "feedback_items": [
+    {
+      "feedback_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567801",
+      "section_reference": "executive_context",
+      "feedback_type": "commendation",
+      "severity": "informational",
+      "content": "Clear and concise executive summary that effectively captures the key decision points",
+      "timestamp": "2026-01-22T10:30:00Z"
+    },
+    {
+      "feedback_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567802",
+      "section_reference": "recommendation",
+      "feedback_type": "correction",
+      "severity": "major",
+      "content": "The recommendation section lacks explicit rationale for the APPROVE disposition",
+      "suggested_improvement": "Add 3-5 bullet points explaining the key factors supporting the recommendation",
+      "timestamp": "2026-01-22T10:32:00Z"
+    },
+    {
+      "feedback_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567803",
+      "section_reference": "risks_and_tradeoffs",
+      "feedback_type": "question",
+      "severity": "minor",
+      "content": "What is the confidence interval for the projected cost savings?",
+      "timestamp": "2026-01-22T10:35:00Z"
+    },
+    {
+      "feedback_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567804",
+      "section_reference": "financial_impact",
+      "feedback_type": "enhancement",
+      "severity": "minor",
+      "content": "Consider adding sensitivity analysis for different adoption scenarios",
+      "suggested_improvement": "Include pessimistic, baseline, and optimistic projections with variance analysis",
+      "timestamp": "2026-01-22T10:38:00Z"
+    },
+    {
+      "feedback_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567805",
+      "section_reference": "constraints",
+      "feedback_type": "concern",
+      "severity": "major",
+      "content": "Binding constraint on compliance timeline may be underestimated given current regulatory environment",
+      "evidence_reference": "See Q3 compliance audit findings",
+      "timestamp": "2026-01-22T10:40:00Z"
+    }
+  ],
+  "overall_assessment": {
+    "quality_rating": "good",
+    "completeness_rating": "mostly_complete",
+    "accuracy_rating": "mostly_accurate",
+    "summary_comment": "Strong decision packet with room for improvement in rationale documentation and constraint analysis"
+  },
+  "review_context": {
+    "review_purpose": "approval",
+    "time_spent_minutes": 45,
+    "sections_reviewed": [
+      "executive_context",
+      "recommendation",
+      "risks_and_tradeoffs",
+      "financial_impact",
+      "constraints"
+    ]
+  },
+  "source_system": "agentics-dev-platform"
+}

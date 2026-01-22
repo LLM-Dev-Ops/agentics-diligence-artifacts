@@ -1,0 +1,403 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://agentics.io/contracts/documentation/v1/generator.schema.json",
+  "title": "Documentation Generator Agent Contract",
+  "description": "Input/output schemas for the Documentation Generator Agent. Generates structured, human-readable diligence, audit, and governance documentation from platform DecisionEvents and artifacts.",
+  "definitions": {
+    "SourceEventReference": {
+      "type": "object",
+      "description": "Reference to a source DecisionEvent or artifact",
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier of the source event"
+        },
+        "event_type": {
+          "type": "string",
+          "description": "Type of the source event"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the source event"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent that produced the source event"
+        }
+      },
+      "required": ["event_id", "event_type", "timestamp"],
+      "additionalProperties": false
+    },
+    "DocumentationGeneratorInput": {
+      "type": "object",
+      "description": "Input for documentation generation",
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for this generation request"
+        },
+        "artifact_type": {
+          "type": "string",
+          "enum": [
+            "diligence_report",
+            "executive_summary",
+            "technical_assessment",
+            "risk_report",
+            "compliance_report",
+            "audit_package",
+            "governance_memo",
+            "investment_memo",
+            "architecture_overview",
+            "decision_log"
+          ],
+          "description": "Type of documentation to generate"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["markdown", "json", "html", "pdf_metadata"],
+          "default": "markdown",
+          "description": "Output format for the generated documentation"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["full", "summary", "section", "incremental"],
+          "default": "full",
+          "description": "Scope of documentation generation"
+        },
+        "audience": {
+          "type": "string",
+          "enum": ["executive", "technical", "compliance", "investor", "auditor", "board"],
+          "description": "Target audience for the documentation"
+        },
+        "classification": {
+          "type": "string",
+          "enum": ["public", "internal", "confidential", "restricted"],
+          "default": "internal",
+          "description": "Classification level of the documentation"
+        },
+        "timeframe": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Start of timeframe for source events"
+            },
+            "to": {
+              "type": "string",
+              "format": "date-time",
+              "description": "End of timeframe for source events"
+            }
+          },
+          "additionalProperties": false
+        },
+        "source_events": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/SourceEventReference" },
+          "description": "Explicit list of source events to include (optional - if not provided, fetched from ruvector-service)"
+        },
+        "source_query": {
+          "type": "object",
+          "description": "Query parameters for fetching source events from ruvector-service",
+          "properties": {
+            "event_types": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Filter by event types"
+            },
+            "agent_ids": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Filter by source agent IDs"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100,
+              "description": "Maximum events to fetch"
+            }
+          },
+          "additionalProperties": false
+        },
+        "template_overrides": {
+          "type": "object",
+          "description": "Optional template customizations",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Custom document title"
+            },
+            "subtitle": {
+              "type": "string",
+              "description": "Custom document subtitle"
+            },
+            "header": {
+              "type": "string",
+              "description": "Custom header content"
+            },
+            "footer": {
+              "type": "string",
+              "description": "Custom footer content"
+            },
+            "sections_to_include": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Specific sections to include (if not all)"
+            },
+            "sections_to_exclude": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Sections to exclude from generation"
+            }
+          },
+          "additionalProperties": false
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional metadata to include in the document",
+          "properties": {
+            "project_name": {
+              "type": "string",
+              "description": "Project or entity name"
+            },
+            "version": {
+              "type": "string",
+              "description": "Document version"
+            },
+            "author": {
+              "type": "string",
+              "description": "Document author or generator"
+            },
+            "prepared_for": {
+              "type": "string",
+              "description": "Intended recipient"
+            },
+            "confidentiality_notice": {
+              "type": "string",
+              "description": "Confidentiality statement"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "required": ["request_id", "artifact_type", "audience"],
+      "additionalProperties": false
+    },
+    "GeneratedSection": {
+      "type": "object",
+      "description": "A generated documentation section",
+      "properties": {
+        "section_id": {
+          "type": "string",
+          "description": "Unique identifier for the section"
+        },
+        "title": {
+          "type": "string",
+          "description": "Section title"
+        },
+        "content": {
+          "type": "string",
+          "description": "Section content (in specified format)"
+        },
+        "source_event_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "description": "Source events that contributed to this section"
+        },
+        "completeness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Completeness score for this section"
+        },
+        "word_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Word count for this section"
+        }
+      },
+      "required": ["section_id", "title", "content", "completeness"],
+      "additionalProperties": false
+    },
+    "DocumentationGeneratorOutput": {
+      "type": "object",
+      "description": "Output from documentation generation",
+      "properties": {
+        "artifact": {
+          "type": "object",
+          "description": "The generated documentation artifact",
+          "properties": {
+            "artifact_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Unique identifier for the artifact"
+            },
+            "artifact_type": {
+              "type": "string",
+              "description": "Type of artifact generated"
+            },
+            "format": {
+              "type": "string",
+              "enum": ["markdown", "json", "html", "pdf_metadata"],
+              "description": "Format of the artifact"
+            },
+            "title": {
+              "type": "string",
+              "description": "Document title"
+            },
+            "content": {
+              "type": "string",
+              "description": "Full document content"
+            },
+            "sections": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/GeneratedSection" },
+              "description": "Individual sections of the document"
+            },
+            "table_of_contents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "section_id": { "type": "string" },
+                  "title": { "type": "string" },
+                  "level": { "type": "integer", "minimum": 1, "maximum": 6 }
+                },
+                "required": ["section_id", "title", "level"],
+                "additionalProperties": false
+              },
+              "description": "Table of contents structure"
+            }
+          },
+          "required": ["artifact_id", "artifact_type", "format", "title", "content", "sections"],
+          "additionalProperties": false
+        },
+        "generation_stats": {
+          "type": "object",
+          "description": "Statistics about the generation process",
+          "properties": {
+            "source_events_processed": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of source events processed"
+            },
+            "sections_generated": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of sections generated"
+            },
+            "total_word_count": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total word count"
+            },
+            "generation_duration_ms": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Generation duration in milliseconds"
+            },
+            "template_used": {
+              "type": "string",
+              "description": "Template identifier used"
+            }
+          },
+          "required": ["source_events_processed", "sections_generated", "total_word_count", "generation_duration_ms"],
+          "additionalProperties": false
+        },
+        "quality_metrics": {
+          "type": "object",
+          "description": "Quality metrics for the generated documentation",
+          "properties": {
+            "overall_completeness": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Overall completeness score"
+            },
+            "data_coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Percentage of available data included"
+            },
+            "section_completeness": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "description": "Completeness by section"
+            },
+            "gaps_identified": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "section": { "type": "string" },
+                  "description": { "type": "string" },
+                  "severity": { "type": "string", "enum": ["critical", "major", "minor"] }
+                },
+                "required": ["section", "description", "severity"],
+                "additionalProperties": false
+              },
+              "description": "Data gaps identified during generation"
+            }
+          },
+          "required": ["overall_completeness", "data_coverage"],
+          "additionalProperties": false
+        },
+        "storage": {
+          "type": "object",
+          "description": "Storage information",
+          "properties": {
+            "stored": {
+              "type": "boolean",
+              "description": "Whether artifact was stored to ruvector-service"
+            },
+            "storage_ref": {
+              "type": "string",
+              "description": "Reference to stored artifact"
+            },
+            "stored_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When artifact was stored"
+            }
+          },
+          "required": ["stored"],
+          "additionalProperties": false
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Generation metadata",
+          "properties": {
+            "generated_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When documentation was generated"
+            },
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Original request ID"
+            },
+            "execution_ref": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Execution reference"
+            }
+          },
+          "required": ["generated_at", "request_id", "execution_ref"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["artifact", "generation_stats", "quality_metrics", "storage", "metadata"],
+      "additionalProperties": false
+    }
+  }
+}

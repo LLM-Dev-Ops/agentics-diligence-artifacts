@@ -1,11 +1,19 @@
 {
   "name": "agentics-diligence",
-  "version": "1.0.0",
-  "description": "Agentics Diligence Artifacts API",
+  "version": "1.1.0",
+  "description": "Agentics Diligence Artifacts API and Documentation Generator",
   "main": "src/server.js",
+  "bin": {
+    "agentics-diligence": "src/cli.js"
+  },
   "scripts": {
     "start": "node src/server.js",
     "test": "node src/test-validation.js",
+    "test:agents": "node src/test-agents.js",
+    "cli": "node src/cli.js",
+    "generate": "node src/cli.js generate",
+    "inspect": "node src/cli.js inspect",
+    "templates": "node src/cli.js templates",
     "synthesize": "npx ts-node synthesis/index.ts",
     "build:synthesis": "npx tsc -p synthesis/tsconfig.json"
   },

@@ -1,0 +1,145 @@
+# Cloud Build Configuration - agentics-diligence-artifacts
+#
+# This configuration defines the CI/CD pipeline for deploying
+# the unified agentics-diligence service to Google Cloud Run.
+#
+# Trigger: Push to main branch or manual trigger
+# Target: Cloud Run (us-central1)
+#
+# ARCHITECTURAL CONSTRAINTS:
+# - Single unified service deployment
+# - No database connections (persistence via ruvector-service)
+# - Stateless runtime
+# - Environment-based configuration
+
+substitutions:
+  _SERVICE_NAME: agentics-diligence
+  _REGION: us-central1
+  _PLATFORM_ENV: prod
+
+steps:
+  # Step 1: Install dependencies and run tests
+  - name: 'node:20'
+    id: 'install-and-test'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "=== Installing dependencies ==="
+        npm ci
+
+        echo "=== Running Documentation Generator Agent tests ==="
+        npm run test:agents
+
+        echo "=== Building synthesis layer ==="
+        npm run build:synthesis || echo "Synthesis build skipped"
+
+  # Step 2: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+      - '--cache-from'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+      - '.'
+
+  # Step 3: Push image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}'
+
+  # Step 4: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-cloud-run'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '512Mi'
+      - '--cpu'
+      - '1'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '10'
+      - '--timeout'
+      - '60s'
+      - '--concurrency'
+      - '80'
+      - '--set-env-vars'
+      - 'SERVICE_NAME=${_SERVICE_NAME},SERVICE_VERSION=$COMMIT_SHA,PLATFORM_ENV=${_PLATFORM_ENV},LLM_OBSERVATORY_ENABLED=true'
+      - '--set-secrets'
+      - 'RUVECTOR_SERVICE_URL=ruvector-service-url:latest,RUVECTOR_API_KEY=ruvector-api-key:latest,LLM_OBSERVATORY_URL=llm-observatory-url:latest'
+
+  # Step 5: Verify deployment
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'verify-deployment'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "=== Verifying deployment ==="
+
+        # Get the service URL
+        SERVICE_URL=$(gcloud run services describe ${_SERVICE_NAME} \
+          --region ${_REGION} \
+          --format 'value(status.url)')
+
+        echo "Service URL: $SERVICE_URL"
+
+        # Health check
+        echo "Checking health endpoint..."
+        HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/")
+
+        if [ "$HEALTH_RESPONSE" != "200" ]; then
+          echo "ERROR: Health check failed with status $HEALTH_RESPONSE"
+          exit 1
+        fi
+
+        echo "Health check passed!"
+
+        # API index check
+        echo "Checking API index..."
+        INDEX_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/v1/diligence")
+
+        if [ "$INDEX_RESPONSE" != "200" ]; then
+          echo "ERROR: API index check failed with status $INDEX_RESPONSE"
+          exit 1
+        fi
+
+        echo "API index check passed!"
+        echo "=== Deployment verification complete ==="
+
+# Build configuration
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
+
+# Images to push
+images:
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+
+# Build timeout (10 minutes)
+timeout: '600s'
+
+# Tags for organization
+tags:
+  - 'agentics-diligence'
+  - 'production'

@@ -1,0 +1,111 @@
+# Cloud Run Service Manifest - agentics-diligence
+#
+# Infrastructure-as-Code definition for the unified diligence service.
+# Apply with: gcloud run services replace deploy/service.yaml --region us-central1
+#
+# ARCHITECTURAL CONSTRAINTS:
+# - Single unified service
+# - Stateless runtime
+# - No direct database connections
+# - All persistence via ruvector-service
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: agentics-diligence
+  namespace: agentics-dev
+  labels:
+    app: agentics-diligence
+    component: diligence-learning
+    team: agentics
+  annotations:
+    run.googleapis.com/launch-stage: GA
+    run.googleapis.com/description: "Unified diligence documentation and learning service"
+spec:
+  template:
+    metadata:
+      labels:
+        app: agentics-diligence
+      annotations:
+        # Scaling configuration
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/cpu-throttling: "true"
+        run.googleapis.com/startup-cpu-boost: "true"
+        # Execution environment
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 60
+      serviceAccountName: diligence-service@agentics-dev.iam.gserviceaccount.com
+      containers:
+        - name: agentics-diligence
+          image: gcr.io/agentics-dev/agentics-diligence:latest
+          ports:
+            - containerPort: 8080
+              name: http1
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            # Service identity
+            - name: SERVICE_NAME
+              value: agentics-diligence
+            - name: SERVICE_VERSION
+              value: "1.0.0"
+            - name: PLATFORM_ENV
+              value: prod
+
+            # RuVector Service (persistence layer)
+            - name: RUVECTOR_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ruvector-service-url
+                  key: latest
+
+            - name: RUVECTOR_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ruvector-api-key
+                  key: latest
+
+            # Telemetry
+            - name: LLM_OBSERVATORY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: llm-observatory-url
+                  key: latest
+
+            - name: LLM_OBSERVATORY_ENABLED
+              value: "true"
+
+            # Runtime
+            - name: NODE_ENV
+              value: production
+            - name: LOG_LEVEL
+              value: info
+
+          # Health checks
+          startupProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            failureThreshold: 12
+            timeoutSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 10
+
+  # Traffic routing (100% to latest)
+  traffic:
+    - percent: 100
+      latestRevision: true

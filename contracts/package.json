@@ -1,15 +1,18 @@
 {
   "name": "@agentics/contracts",
-  "version": "1.0.0",
-  "description": "JSON Schema contracts for Agentics Diligence API",
+  "version": "1.1.0",
+  "description": "JSON Schema contracts for Agentics Diligence API and Documentation Generator",
   "main": "index.js",
   "exports": {
     ".": "./index.js",
     "./diligence/v1/request.schema.json": "./diligence/v1/request.schema.json",
-    "./diligence/v1/response.schema.json": "./diligence/v1/response.schema.json"
+    "./diligence/v1/response.schema.json": "./diligence/v1/response.schema.json",
+    "./documentation/v1/decision-event.schema.json": "./documentation/v1/decision-event.schema.json",
+    "./documentation/v1/generator.schema.json": "./documentation/v1/generator.schema.json"
   },
   "files": [
     "diligence/",
+    "documentation/",
     "index.js"
   ]
 }

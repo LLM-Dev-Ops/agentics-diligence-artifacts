@@ -17,8 +17,8 @@
     },
     "decision_type": {
       "type": "string",
-      "const": "documentation_generation",
-      "description": "Fixed classification for documentation generation events"
+      "const": "document_generation_signal",
+      "description": "Fixed classification for document generation signal events (HARDENED)"
     },
     "inputs_hash": {
       "type": "string",
@@ -73,9 +73,21 @@
         "storage_ref": {
           "type": "string",
           "description": "Reference to stored artifact in ruvector-service"
+        },
+        "referenced_event_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "maxItems": 100,
+          "description": "IDs of all consumed DecisionEvents (HARDENED - required per role rules)"
+        },
+        "confidence_passthrough": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Aggregated confidence from source events (HARDENED - passthrough, not generated)"
         }
       },
-      "required": ["artifact_id", "artifact_type", "format", "sections_generated", "source_events_count"],
+      "required": ["artifact_id", "artifact_type", "format", "sections_generated", "source_events_count", "referenced_event_ids"],
       "additionalProperties": false
     },
     "confidence": {

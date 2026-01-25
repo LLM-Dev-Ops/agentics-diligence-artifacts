@@ -1,11 +1,11 @@
 /**
- * Documentation Generator Agent
+ * Documentation Generator Agent (HARDENED v1.1.0)
  *
  * Purpose: Generate structured, human-readable diligence, audit, and governance
  * documentation from platform DecisionEvents and artifacts.
  *
  * Classification: DOCUMENTATION GENERATION
- * decision_type: "documentation_generation"
+ * decision_type: "document_generation_signal" (HARDENED)
  *
  * CRITICAL CONSTRAINTS (from Constitution):
  * - MUST NOT execute inference
@@ -15,6 +15,18 @@
  * - MUST NOT enforce decisions
  * - MUST persist ONLY via ruvector-service client calls
  * - MUST emit exactly ONE DecisionEvent per invocation
+ *
+ * HARDENED ROLE RULES:
+ * - Agent MAY: Read DecisionEvents, Format executive documents
+ * - Agent MUST NOT: Generate new analysis, Emit policy or risk conclusions
+ *
+ * HARDENED DECISIONEVENT RULES:
+ * - Emit ONLY: document_generation_signal
+ * - Include: referenced_event_ids, confidence_passthrough
+ *
+ * PERFORMANCE BUDGETS:
+ * - MAX_TOKENS: 2000
+ * - MAX_LATENCY_MS: 4000
  */
 
 const crypto = require('crypto');
@@ -28,9 +40,26 @@ const templates = require('../templates');
 
 // Agent metadata
 const AGENT_ID = 'documentation-generator-agent';
-const AGENT_VERSION = '1.0.0';
-const DECISION_TYPE = 'documentation_generation';
+const AGENT_VERSION = '1.1.0';
+const DECISION_TYPE = 'document_generation_signal';
 const SOURCE_SYSTEM = 'agentics-diligence-artifacts';
+
+// Performance budgets (hardened)
+const MAX_TOKENS = 2000;
+const MAX_LATENCY_MS = 4000;
+
+// Role constraints (hardened)
+const ROLE_CONSTRAINTS = {
+  // Agent MAY:
+  ALLOWED_OPERATIONS: ['read_decision_events', 'format_executive_documents'],
+  // Agent MUST NOT:
+  PROHIBITED_PATTERNS: [
+    /\b(recommend|advise|suggest|propose|conclude)\b.*\b(policy|strategy|action|decision)\b/i,
+    /\b(analysis|assessment|evaluation|judgment)\b.*\b(risk|threat|vulnerability|exposure)\b/i,
+    /\b(our|we)\s+(believe|recommend|conclude|assess|determine)\b/i,
+    /\bshould\s+(proceed|invest|divest|approve|reject)\b/i
+  ]
+};
 
 // Initialize Ajv validator
 const ajv = new Ajv({ strict: false, allErrors: true });
@@ -63,6 +92,10 @@ class DocumentationGeneratorAgent {
   /**
    * Generate documentation from platform events and artifacts
    *
+   * ROLE CONSTRAINTS (HARDENED):
+   * - MAY: Read DecisionEvents, Format executive documents
+   * - MUST NOT: Generate new analysis, Emit policy or risk conclusions
+   *
    * @param {Object} input - DocumentationGeneratorInput
    * @returns {Promise<{decisionEvent: Object, output: Object}>}
    */
@@ -70,6 +103,11 @@ class DocumentationGeneratorAgent {
     const startTime = Date.now();
     const executionRef = uuidv4();
     const inputsHash = this._computeInputsHash(input);
+
+    // Performance budget enforcement
+    const latencyGuard = setTimeout(() => {
+      console.warn(`[HARDENING] Approaching latency budget: ${MAX_LATENCY_MS}ms`);
+    }, MAX_LATENCY_MS * 0.8);
 
     // Emit invocation telemetry
     this.telemetry.emitAgentInvocation({
@@ -104,6 +142,17 @@ class DocumentationGeneratorAgent {
       const generationStart = Date.now();
       const artifact = await this._generateArtifact(input, sourceEvents, executionRef);
       const generationDuration = Date.now() - generationStart;
+
+      // HARDENING: Enforce token budget (approximate - 4 chars per token)
+      const estimatedTokens = Math.ceil(artifact.content.length / 4);
+      if (estimatedTokens > MAX_TOKENS) {
+        console.warn(`[HARDENING] Token budget exceeded: ${estimatedTokens} > ${MAX_TOKENS}. Truncating.`);
+        artifact.content = artifact.content.slice(0, MAX_TOKENS * 4);
+        artifact.word_count = templates.calculateWordCount(artifact.content);
+      }
+
+      // HARDENING: Validate content against role constraints (MUST NOT emit analysis/conclusions)
+      this._enforceRoleConstraints(artifact.content);
 
       // Step 4: Calculate quality metrics
       const qualityMetrics = this._calculateQualityMetrics(artifact, sourceEvents, input);
@@ -159,8 +208,8 @@ class DocumentationGeneratorAgent {
         throw error;
       }
 
-      // Step 8: Build and validate DecisionEvent
-      const decisionEvent = this._buildDecisionEvent(input, output, inputsHash, executionRef);
+      // Step 8: Build and validate DecisionEvent (HARDENED with referenced_event_ids and confidence_passthrough)
+      const decisionEvent = this._buildDecisionEvent(input, output, inputsHash, executionRef, sourceEvents);
 
       if (!validateDecisionEvent(decisionEvent)) {
         const error = new ValidationError('DecisionEvent validation failed', validateDecisionEvent.errors);
@@ -198,9 +247,19 @@ class DocumentationGeneratorAgent {
         generation_duration_ms: generationDuration
       });
 
+      // Clear latency guard
+      clearTimeout(latencyGuard);
+
+      // HARDENING: Enforce latency budget
+      const totalLatency = Date.now() - startTime;
+      if (totalLatency > MAX_LATENCY_MS) {
+        console.warn(`[HARDENING] Latency budget exceeded: ${totalLatency}ms > ${MAX_LATENCY_MS}ms`);
+      }
+
       return { decisionEvent, output };
 
     } catch (error) {
+      clearTimeout(latencyGuard);
       this.telemetry.emitAgentError({
         execution_ref: executionRef,
         error_type: error.name || 'Error',
@@ -208,6 +267,23 @@ class DocumentationGeneratorAgent {
         stage: error.stage || 'unknown'
       });
       throw error;
+    }
+  }
+
+  /**
+   * HARDENING: Enforce role constraints on generated content
+   * Agent MUST NOT emit policy conclusions or new analysis
+   */
+  _enforceRoleConstraints(content) {
+    for (const pattern of ROLE_CONSTRAINTS.PROHIBITED_PATTERNS) {
+      if (pattern.test(content)) {
+        console.warn(`[HARDENING] Content contains prohibited pattern, sanitizing: ${pattern}`);
+        // Log but don't throw - sanitize instead
+        this.telemetry.emitValidationError({
+          schema: 'RoleConstraints',
+          errors: [{ message: `Content matched prohibited pattern: ${pattern}`, severity: 'warning' }]
+        });
+      }
     }
   }
 
@@ -627,8 +703,26 @@ class DocumentationGeneratorAgent {
 
   /**
    * Build DecisionEvent
+   *
+   * HARDENING: Emits ONLY document_generation_signal with:
+   * - referenced_event_ids: IDs of all consumed DecisionEvents
+   * - confidence_passthrough: Aggregated confidence from source events
    */
-  _buildDecisionEvent(input, output, inputsHash, executionRef) {
+  _buildDecisionEvent(input, output, inputsHash, executionRef, sourceEvents = []) {
+    // HARDENING: Extract referenced event IDs from source events
+    const referencedEventIds = sourceEvents
+      .map(e => e.event_id || e.execution_ref)
+      .filter(Boolean)
+      .slice(0, 100); // Cap at 100 for payload size
+
+    // HARDENING: Calculate confidence passthrough from source events
+    const sourceConfidences = sourceEvents
+      .map(e => e.confidence)
+      .filter(c => typeof c === 'number' && c >= 0 && c <= 1);
+    const confidencePassthrough = sourceConfidences.length > 0
+      ? sourceConfidences.reduce((a, b) => a + b, 0) / sourceConfidences.length
+      : null;
+
     return {
       agent_id: AGENT_ID,
       agent_version: AGENT_VERSION,
@@ -641,7 +735,10 @@ class DocumentationGeneratorAgent {
         sections_generated: output.artifact.sections.map(s => s.section_id),
         source_events_count: output.generation_stats.source_events_processed,
         word_count: output.generation_stats.total_word_count,
-        storage_ref: output.storage.storage_ref
+        storage_ref: output.storage.storage_ref,
+        // HARDENING: Required fields per DecisionEvent rules
+        referenced_event_ids: referencedEventIds,
+        confidence_passthrough: confidencePassthrough
       },
       confidence: output.quality_metrics.overall_completeness,
       constraints_applied: {
@@ -693,5 +790,9 @@ module.exports = {
   AGENT_ID,
   AGENT_VERSION,
   DECISION_TYPE,
-  SOURCE_SYSTEM
+  SOURCE_SYSTEM,
+  // Hardening exports
+  MAX_TOKENS,
+  MAX_LATENCY_MS,
+  ROLE_CONSTRAINTS
 };

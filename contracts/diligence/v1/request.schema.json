@@ -11,7 +11,7 @@
     },
     "path": {
       "type": "string",
-      "pattern": "^/v1/diligence/?$|^/v1/diligence/(architecture|benchmarks|narratives|valuation)$"
+      "pattern": "^/v1/diligence/?$|^/v1/diligence/(architecture|benchmarks|narratives|valuation)$|^/health$"
     },
     "query": {
       "type": "object",
@@ -37,7 +37,36 @@
     "body": {
       "oneOf": [
         { "type": "null" },
-        { "type": "object" }
+        {
+          "type": "object",
+          "properties": {
+            "refs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "type": "string", "enum": ["simulation", "plan", "report", "assessment"] }
+                },
+                "required": ["id", "type"],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            },
+            "frameworks": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["soc2", "gdpr", "hipaa", "iso27001", "pci_dss", "nist", "fedramp"]
+              },
+              "minItems": 1
+            },
+            "include_evidence": { "type": "boolean" },
+            "certifying_authority": { "type": "string" }
+          },
+          "required": ["refs", "frameworks"],
+          "additionalProperties": false
+        }
       ]
     }
   },

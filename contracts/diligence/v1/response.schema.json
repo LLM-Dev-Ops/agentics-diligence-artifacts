@@ -73,6 +73,76 @@
       "additionalProperties": false
     },
     {
+      "title": "DiligencePackageResponse",
+      "type": "object",
+      "properties": {
+        "diligence_package": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "pattern": "^diligence-" },
+            "frameworks_evaluated": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "compliance_summary": {
+              "type": "object",
+              "properties": {
+                "overall_status": {
+                  "type": "string",
+                  "enum": ["compliant", "non_compliant", "partial"]
+                },
+                "by_framework": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "enum": ["compliant", "non_compliant", "partial"]
+                      },
+                      "findings": { "type": "integer", "minimum": 0 },
+                      "controls_evaluated": { "type": "integer", "minimum": 0 }
+                    },
+                    "required": ["status", "findings", "controls_evaluated"],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": ["overall_status", "by_framework"],
+              "additionalProperties": false
+            },
+            "evidence": { "type": "array" },
+            "certifying_authority": { "type": "string" },
+            "generated_at": { "type": "string", "format": "date-time" }
+          },
+          "required": ["id", "frameworks_evaluated", "compliance_summary", "evidence", "generated_at"],
+          "additionalProperties": false
+        },
+        "execution_metadata": {
+          "type": "object",
+          "properties": {
+            "trace_id": { "type": "string" },
+            "timestamp": { "type": "string", "format": "date-time" },
+            "service": { "type": "string" }
+          },
+          "required": ["trace_id", "timestamp", "service"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["diligence_package", "execution_metadata"],
+      "additionalProperties": false
+    },
+    {
+      "title": "HealthResponse",
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "const": "healthy" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["status", "timestamp"],
+      "additionalProperties": false
+    },
+    {
       "title": "ErrorResponse",
       "type": "object",
       "properties": {

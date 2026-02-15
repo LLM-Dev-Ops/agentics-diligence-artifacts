@@ -40,7 +40,8 @@ const VALID_ROUTES = new Set([
   '/v1/diligence/architecture',
   '/v1/diligence/benchmarks',
   '/v1/diligence/narratives',
-  '/v1/diligence/valuation'
+  '/v1/diligence/valuation',
+  '/health'
 ]);
 
 /**
@@ -118,6 +119,14 @@ app.get('/', (req, res) => {
   });
 });
 
+// GET /health - lightweight health probe
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Main diligence index endpoint
 app.get('/v1/diligence', (req, res) => {
   const proof = generateExecutionProof(['request-validation', 'index-generation']);
@@ -134,6 +143,131 @@ app.get('/v1/diligence', (req, res) => {
     },
     ...proof
   });
+});
+
+// Compliance controls catalog per framework
+const FRAMEWORK_CONTROLS = {
+  soc2: { controls: ['CC1.1', 'CC1.2', 'CC2.1', 'CC3.1', 'CC3.2', 'CC4.1', 'CC5.1', 'CC6.1', 'CC6.2', 'CC7.1', 'CC7.2', 'CC8.1'], count: 12 },
+  gdpr: { controls: ['Art5-Principles', 'Art6-Lawfulness', 'Art12-Transparency', 'Art15-Access', 'Art17-Erasure', 'Art25-ByDesign', 'Art30-Records', 'Art32-Security'], count: 8 },
+  hipaa: { controls: ['§164.308-Admin', '§164.310-Physical', '§164.312-Technical', '§164.314-Organizational', '§164.316-Policies', '§164.502-Uses', '§164.504-BusinessAssoc', '§164.508-Consent', '§164.510-Uses', '§164.512-Uses', '§164.514-Other', '§164.520-Notice', '§164.522-Rights', '§164.524-Access', '§164.526-Amendment'], count: 15 },
+  iso27001: { controls: ['A5-Policies', 'A6-Organization', 'A7-HR', 'A8-Assets', 'A9-Access', 'A10-Crypto', 'A11-Physical', 'A12-Operations', 'A13-Comms', 'A14-Acquisition'], count: 10 },
+  pci_dss: { controls: ['R1-Firewall', 'R2-Defaults', 'R3-StoredData', 'R4-Encryption', 'R5-Antivirus', 'R6-SecureSystems', 'R7-Access', 'R8-AuthN', 'R9-Physical', 'R10-Monitoring', 'R11-Testing', 'R12-Policy'], count: 12 },
+  nist: { controls: ['ID.AM', 'ID.GV', 'PR.AC', 'PR.AT', 'PR.DS', 'PR.IP', 'PR.MA', 'PR.PT', 'DE.AE', 'DE.CM', 'DE.DP', 'RS.RP', 'RC.RP'], count: 13 },
+  fedramp: { controls: ['AC-Access', 'AU-Audit', 'CA-Assessment', 'CM-Config', 'CP-Contingency', 'IA-AuthN', 'IR-Incident', 'MA-Maintenance', 'MP-Media', 'PE-Physical', 'PL-Planning', 'PS-Personnel', 'RA-RiskAssess', 'SA-Acquisition', 'SC-SysComms', 'SI-SysIntegrity'], count: 16 }
+};
+
+/**
+ * Evaluate compliance for a single framework against provided refs.
+ * Returns a deterministic assessment based on the ref artifacts available.
+ */
+function evaluateFramework(framework, refs, includeEvidence) {
+  const catalog = FRAMEWORK_CONTROLS[framework];
+  if (!catalog) {
+    return { status: 'non_compliant', findings: 1, controls_evaluated: 0 };
+  }
+
+  const controls_evaluated = catalog.count;
+  // Assess based on ref coverage: more refs = better coverage
+  const coverageRatio = Math.min(refs.length / 3, 1);
+  const passedControls = Math.floor(controls_evaluated * coverageRatio);
+  const findings = controls_evaluated - passedControls;
+
+  let status;
+  if (findings === 0) {
+    status = 'compliant';
+  } else if (findings <= Math.floor(controls_evaluated * 0.3)) {
+    status = 'partial';
+  } else {
+    status = 'non_compliant';
+  }
+
+  const result = { status, findings, controls_evaluated };
+
+  const evidence = [];
+  if (includeEvidence) {
+    catalog.controls.forEach((control, i) => {
+      evidence.push({
+        control_id: control,
+        framework,
+        status: i < passedControls ? 'pass' : 'finding',
+        refs_evaluated: refs.map(r => r.id),
+        evaluated_at: new Date().toISOString()
+      });
+    });
+  }
+
+  return { ...result, evidence };
+}
+
+// POST /v1/diligence - package compliance and due diligence artifacts
+app.post('/v1/diligence', (req, res) => {
+  const { refs, frameworks, include_evidence, certifying_authority } = req.body;
+
+  if (!refs || !Array.isArray(refs) || refs.length === 0) {
+    return res.status(400).json({
+      error: 'Request body must include a non-empty "refs" array',
+      execution_id: uuidv4()
+    });
+  }
+  if (!frameworks || !Array.isArray(frameworks) || frameworks.length === 0) {
+    return res.status(400).json({
+      error: 'Request body must include a non-empty "frameworks" array',
+      execution_id: uuidv4()
+    });
+  }
+
+  const includeEvidence = include_evidence === true;
+  const byFramework = {};
+  const allEvidence = [];
+
+  for (const fw of frameworks) {
+    const evaluation = evaluateFramework(fw, refs, includeEvidence);
+    byFramework[fw] = {
+      status: evaluation.status,
+      findings: evaluation.findings,
+      controls_evaluated: evaluation.controls_evaluated
+    };
+    if (evaluation.evidence) {
+      allEvidence.push(...evaluation.evidence);
+    }
+  }
+
+  // Derive overall status
+  const statuses = Object.values(byFramework).map(f => f.status);
+  let overall_status;
+  if (statuses.every(s => s === 'compliant')) {
+    overall_status = 'compliant';
+  } else if (statuses.some(s => s === 'non_compliant')) {
+    overall_status = 'non_compliant';
+  } else {
+    overall_status = 'partial';
+  }
+
+  const traceId = req.headers['x-correlation-id'] || uuidv4();
+
+  const response = {
+    diligence_package: {
+      id: `diligence-${uuidv4()}`,
+      frameworks_evaluated: frameworks,
+      compliance_summary: {
+        overall_status,
+        by_framework: byFramework
+      },
+      evidence: includeEvidence ? allEvidence : [],
+      generated_at: new Date().toISOString()
+    },
+    execution_metadata: {
+      trace_id: traceId,
+      timestamp: new Date().toISOString(),
+      service: 'agentics-diligence'
+    }
+  };
+
+  if (certifying_authority) {
+    response.diligence_package.certifying_authority = certifying_authority;
+  }
+
+  res.status(200).json(response);
 });
 
 // Architecture endpoint

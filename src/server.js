@@ -199,13 +199,24 @@ function evaluateFramework(framework, refs, includeEvidence) {
   return { ...result, evidence };
 }
 
+// Normalize framework names from CLI format to internal enum
+// e.g. "SOC2" -> "soc2", "PCI-DSS" -> "pci_dss", "ISO27001" -> "iso27001"
+function normalizeFramework(fw) {
+  return fw.toLowerCase().replace(/-/g, '_');
+}
+
 // POST /v1/diligence - package compliance and due diligence artifacts
 app.post('/v1/diligence', (req, res) => {
-  const { refs, frameworks, include_evidence, certifying_authority } = req.body;
+  let { refs, frameworks, include_evidence, certifying_authority, description } = req.body;
+
+  // Support CLI-style requests that send description instead of refs
+  if (!refs && description) {
+    refs = [{ id: uuidv4(), type: 'assessment' }];
+  }
 
   if (!refs || !Array.isArray(refs) || refs.length === 0) {
     return res.status(400).json({
-      error: 'Request body must include a non-empty "refs" array',
+      error: 'Request body must include a non-empty "refs" array or a "description" string',
       execution_id: uuidv4()
     });
   }
@@ -215,6 +226,9 @@ app.post('/v1/diligence', (req, res) => {
       execution_id: uuidv4()
     });
   }
+
+  // Normalize framework names (accept "SOC2", "PCI-DSS", etc.)
+  frameworks = frameworks.map(normalizeFramework);
 
   const includeEvidence = include_evidence === true;
   const byFramework = {};

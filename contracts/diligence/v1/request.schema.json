@@ -55,16 +55,32 @@
             },
             "frameworks": {
               "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["soc2", "gdpr", "hipaa", "iso27001", "pci_dss", "nist", "fedramp"]
-              },
+              "items": { "type": "string" },
               "minItems": 1
             },
             "include_evidence": { "type": "boolean" },
             "certifying_authority": { "type": "string" }
           },
           "required": ["refs", "frameworks"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "frameworks": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1
+            },
+            "format": {
+              "type": "string",
+              "enum": ["json"]
+            },
+            "include_evidence": { "type": "boolean" },
+            "certifying_authority": { "type": "string" }
+          },
+          "required": ["description", "frameworks"],
           "additionalProperties": false
         }
       ]

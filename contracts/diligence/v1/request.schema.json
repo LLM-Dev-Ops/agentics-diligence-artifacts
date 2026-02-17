@@ -59,7 +59,8 @@
               "minItems": 1
             },
             "include_evidence": { "type": "boolean" },
-            "certifying_authority": { "type": "string" }
+            "certifying_authority": { "type": "string" },
+            "execution_context": { "type": "object" }
           },
           "required": ["refs", "frameworks"],
           "additionalProperties": false
@@ -78,7 +79,8 @@
               "enum": ["json"]
             },
             "include_evidence": { "type": "boolean" },
-            "certifying_authority": { "type": "string" }
+            "certifying_authority": { "type": "string" },
+            "execution_context": { "type": "object" }
           },
           "required": ["description", "frameworks"],
           "additionalProperties": false

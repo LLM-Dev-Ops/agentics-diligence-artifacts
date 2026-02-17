@@ -9,10 +9,110 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
+const https = require('https');
 const { v4: uuidv4 } = require('uuid');
 const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
 const contracts = require('@agentics/contracts');
+
+// Post-execution fan-out endpoints
+const FANOUT_TARGETS = [
+  {
+    name: 'governance-core',
+    url: 'https://governance-core-1062287243982.us-central1.run.app/v1/compliance/record',
+    buildPayload: (pkg, traceId) => ({
+      source: 'agentics-diligence',
+      diligence_id: pkg.id,
+      frameworks_evaluated: pkg.frameworks_evaluated,
+      compliance_summary: pkg.compliance_summary,
+      findings_count: Object.values(pkg.compliance_summary.by_framework)
+        .reduce((sum, fw) => sum + fw.findings, 0),
+      timestamp: pkg.generated_at
+    })
+  },
+  {
+    name: 'security-core',
+    url: 'https://security-core-1062287243982.us-central1.run.app/v1/audit/record',
+    buildPayload: (pkg, traceId) => ({
+      source: 'agentics-diligence',
+      diligence_id: pkg.id,
+      frameworks: pkg.frameworks_evaluated,
+      controls_evaluated: Object.values(pkg.compliance_summary.by_framework)
+        .reduce((sum, fw) => sum + fw.controls_evaluated, 0),
+      violations_found: Object.values(pkg.compliance_summary.by_framework)
+        .reduce((sum, fw) => sum + fw.findings, 0),
+      timestamp: pkg.generated_at
+    })
+  },
+  {
+    name: 'intelligence-core',
+    url: 'https://intelligence-core-1062287243982.us-central1.run.app/v1/ingest/telemetry',
+    buildPayload: (pkg, traceId, timing) => ({
+      source: 'agentics-diligence',
+      event: 'diligence_complete',
+      diligence_id: pkg.id,
+      frameworks: pkg.frameworks_evaluated,
+      timing,
+      timestamp: pkg.generated_at
+    })
+  }
+];
+
+/**
+ * Fire non-blocking POST calls to core bundles after diligence package generation.
+ * Uses Promise.allSettled so failures don't affect the main response.
+ * Forwards the correlation ID from the original request.
+ */
+function fanOutToCoreBundles(diligencePackage, traceId, timing) {
+  const promises = FANOUT_TARGETS.map(target => {
+    const payload = JSON.stringify(target.buildPayload(diligencePackage, traceId, timing));
+    const url = new URL(target.url);
+
+    return new Promise((resolve, reject) => {
+      const transport = url.protocol === 'https:' ? https : http;
+      const req = transport.request({
+        hostname: url.hostname,
+        port: url.port || (url.protocol === 'https:' ? 443 : 80),
+        path: url.pathname,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload),
+          'X-Correlation-ID': traceId
+        },
+        timeout: 5000
+      }, (res) => {
+        let body = '';
+        res.on('data', chunk => { body += chunk; });
+        res.on('end', () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve({ target: target.name, status: res.statusCode });
+          } else {
+            reject(new Error(`${target.name} returned ${res.statusCode}: ${body}`));
+          }
+        });
+      });
+
+      req.on('error', (err) => reject(new Error(`${target.name}: ${err.message}`)));
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error(`${target.name}: request timed out`));
+      });
+
+      req.write(payload);
+      req.end();
+    });
+  });
+
+  Promise.allSettled(promises).then(results => {
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        console.warn(`[fanout] WARN: ${result.reason.message}`);
+      }
+    }
+  });
+}
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -207,6 +307,7 @@ function normalizeFramework(fw) {
 
 // POST /v1/diligence - package compliance and due diligence artifacts
 app.post('/v1/diligence', (req, res) => {
+  const startTime = Date.now();
   let { refs, frameworks, include_evidence, certifying_authority, description } = req.body;
 
   // Support CLI-style requests that send description instead of refs
@@ -280,6 +381,13 @@ app.post('/v1/diligence', (req, res) => {
   if (certifying_authority) {
     response.diligence_package.certifying_authority = certifying_authority;
   }
+
+  // Fire non-blocking fan-out to core bundles
+  const endTime = Date.now();
+  fanOutToCoreBundles(response.diligence_package, traceId, {
+    duration_ms: endTime - startTime,
+    frameworks_count: frameworks.length
+  });
 
   res.status(200).json(response);
 });

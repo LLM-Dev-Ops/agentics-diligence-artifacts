@@ -56,6 +56,28 @@ const FANOUT_TARGETS = [
       timing,
       timestamp: pkg.generated_at
     })
+  },
+  {
+    name: 'research-core',
+    url: 'https://research-core-1062287243982.us-central1.run.app/v1/research/ingest',
+    buildPayload: (pkg, traceId) => ({
+      source: 'agentics-diligence',
+      event_type: 'diligence_completed',
+      execution_id: traceId,
+      timestamp: new Date().toISOString(),
+      payload: pkg
+    })
+  },
+  {
+    name: 'interface-core',
+    url: 'https://interface-core-1062287243982.us-central1.run.app/v1/interface/event',
+    buildPayload: (pkg, traceId) => ({
+      source: 'agentics-diligence',
+      event_type: 'diligence_completed',
+      execution_id: traceId,
+      timestamp: new Date().toISOString(),
+      payload: { action: 'diligence', status: 'completed' }
+    })
   }
 ];
 

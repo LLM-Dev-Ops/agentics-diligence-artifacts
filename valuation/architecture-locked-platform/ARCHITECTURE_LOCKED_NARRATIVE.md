@@ -1,103 +1,55 @@
-# Architecture-Locked Platform: A Structural Approach to Integration Risk Reduction
+# Architecture-Locked Platform: Controls, Evidence and Remaining Risks
 
-## Executive Summary
+## Executive summary
 
-The Agentics platform represents a fundamentally different approach to enterprise AI orchestration software. Rather than shipping a flexible, configurable system that requires significant integration effort and introduces execution uncertainty, this platform enforces a frozen architecture version (architecture-v1.0.0) through automated CI governance, immutable dependency constraints, and explicit forbidden paths. The result is a system where integration risk is structurally bounded rather than contractually promised.
+Architecture-v1.0.0, dependency locking and forbidden-path checks are described as governance controls for the platform. They can help make intended boundaries explicit and reviewable. Their actual scope and effectiveness require implementation and CI evidence.
 
-This document explains why an architecture-locked platform commands valuation consideration distinct from typical pre-revenue software assets, even in the absence of deployed enterprise customers.
+A frozen architecture does not guarantee correctness, deterministic production behavior, lower total acquisition risk or a valuation premium. This narrative must be read with [buyer positioning](BUYER_POSITIONING.md) and the [broker brief](BROKER_BRIEF.md).
 
----
+## Controls to verify
 
-## The Problem with Configurable Platforms
+- Architecture changes use reviewed version increments and migration plans.
+- Dependency locks are reproducible and tested in the relevant environments.
+- Forbidden-path checks cover the stated boundaries and are required on protected branches.
+- Permissions and bypass paths are reviewed; CI can only enforce the checks actually implemented.
+- CLI inputs, outputs and operational actions have appropriate access controls and auditability.
 
-Most enterprise software platforms optimize for flexibility. They expose configuration surfaces, allow custom integrations, and defer architectural decisions to implementation time. This flexibility creates several categories of risk for acquirers:
+Static checks do not establish runtime security or correctness. Specifications may be incomplete and implementations may contain defects. Dependency locks reduce drift but do not eliminate vulnerabilities, platform differences or external-service failures.
 
-**Integration Uncertainty**: Each deployment becomes a unique instance with its own failure modes. The platform's behavior in production depends on decisions made during integration, not decisions made during development.
+## Simulation and production
 
-**Dependency Drift**: Over time, customer deployments diverge from the core platform. Upgrades become risky, support becomes expensive, and the platform's value fragments across incompatible installations.
+Deterministic simulation means repeatable modeled output for controlled inputs and conditions. It does not guarantee the same behavior in production. Validate model assumptions, external dependencies, workload limits, failure recovery and data semantics against real deployments.
 
-**Execution Variance**: Without enforced constraints, the same platform can exhibit dramatically different behavior depending on how it was configured. This makes due diligence difficult and post-acquisition integration unpredictable.
+Single-version governance does not make every environment identical or make support independent of customer count. Support effort, migration complexity and operational reliability must be measured.
 
----
+## Customer validation and architecture evolution
 
-## How Architecture Locking Addresses These Risks
+The absence of live customers is a validation gap, not a product feature. It leaves willingness to pay, deployment requirements, actual outcomes and support economics unproven.
 
-The Agentics platform takes the opposite approach. The architecture-v1.0.0 specification is not a guideline or a recommendation—it is an enforced constraint that governs every aspect of the system's behavior.
+Use paid pilots to test the architecture against valuable workflows. Evaluate required changes through explicit versioned decisions and rollback plans. Preserve justified boundaries while responding to evidence; customer-driven requirements do not inherently represent technical debt.
 
-### Immutability as a Design Principle
+## Acquisition implications
 
-The platform treats its own architecture as immutable infrastructure. Changes to architectural decisions require a versioned release with explicit migration paths, not runtime configuration. This means:
+A buyer may value a verified implementation that accelerates a specific objective. Establish that value through reproducible capability evidence, IP and license review, buyer fit, and a build-versus-buy comparison including unfinished integration and commercialization work.
 
-- The platform's behavior is deterministic and reproducible
-- Integration teams cannot accidentally deviate from tested configurations
-- Post-acquisition technical due diligence can rely on documented behavior
+Do not infer transaction readiness or premium pricing from architecture constraints alone. Commercial diligence remains necessary before investment or acquisition decisions.
 
-### Forbidden Paths
+## Evidence and commercial validation gate
 
-The architecture explicitly prohibits certain integration patterns, dependency relationships, and extension mechanisms. These prohibitions are enforced through CI pipelines, not documentation. Code that violates architectural constraints cannot be merged, deployed, or executed.
+The existing materials describe the asset as pre-revenue with no live customer deployments. This revision does not independently certify the current customer count. Until reconciled contracts, invoices, receipts and deployment records establish otherwise, paying customers, revenue, retention, production readiness and customer ROI must be presented as unverified. Prospects, letters of intent, unpaid design partners, downloads and simulations must be reported separately from paying customers.
 
-This is not a policy decision that can be overridden by a customer's timeline pressure or an integration team's workaround. It is a structural property of the system.
+Before presenting a premium valuation or acquisition recommendation, assemble:
+- A narrow target customer, budget owner, costly workflow and competing alternatives, supported by documented customer discovery.
+- A paid pilot with written scope, price, success criteria and implementation responsibilities. Track signed contracts, invoiced amounts and collected cash separately.
+- Customer-accepted results against a baseline: time saved, error rate, operating cost and net benefit after compute, integration and support costs.
+- Production evidence for the scoped workflow: access controls, auditability, failure recovery, load limits, monitoring, rollback and incident ownership.
+- Evidence of repeat use, renewal or expansion over a stated observation period. A short pilot does not establish long-term retention.
+- An independently reproducible technical assessment, license and IP provenance review, and a buyer-specific build-versus-buy analysis including integration, maintenance and commercialization costs.
 
-### Dependency Enforcement
+Proposed owners are commercial lead for demand and paid pilots, engineering lead for production evidence, and transaction lead for buyer fit and IP diligence. Assign named owners and dates before execution; these roles and milestones are proposed, not completed.
 
-External dependencies are locked to specific versions with explicit compatibility matrices. The platform refuses to execute against dependency configurations that have not been tested and validated. This eliminates the category of production failures that arise from dependency drift.
-
-### CLI-Only Orchestration
-
-All platform operations flow through a command-line interface with explicit, auditable inputs and outputs. There are no hidden API surfaces, no undocumented configuration files, and no runtime state that cannot be inspected. This makes the platform's behavior transparent to security audits, compliance reviews, and technical due diligence.
-
-### Deterministic Simulation
-
-The platform includes simulation capabilities that model organizational behavior at enterprise scale. These simulations are deterministic—given the same inputs, they produce the same outputs. This means that integration planning can be validated before deployment, and behavior observed in testing will match behavior observed in production.
-
-### Intent-to-Deployment Separation
-
-The platform maintains a strict separation between intent specification (what the system should do) and deployment execution (how the system does it). This separation allows buyers to understand the platform's capabilities without requiring access to specific customer configurations, and it allows the platform to evolve its execution layer without changing its intent interface.
-
-### CI-Governed Architecture
-
-The architecture is not merely documented—it is enforced through continuous integration pipelines that validate every change against architectural constraints. Violations fail the build. There is no mechanism to bypass these checks without modifying the CI configuration itself, which is subject to its own review and audit requirements.
-
----
-
-## Why This Matters for Acquirers
-
-### Reduced Integration Risk
-
-When acquiring a software platform, the acquirer's integration team inherits not just the code, but the decisions embedded in that code. With a configurable platform, those decisions are scattered across customer deployments and integration guides. With an architecture-locked platform, those decisions are centralized in a frozen, auditable specification.
-
-The integration team knows exactly what they are acquiring because the platform cannot behave differently than its architecture specifies.
-
-### Predictable Technical Due Diligence
-
-Technical due diligence on a configurable platform requires understanding not just the platform, but every significant deployment variation. Technical due diligence on an architecture-locked platform requires understanding one specification. The frozen architecture-v1.0.0 is the complete description of the platform's behavior.
-
-### Lower Post-Acquisition Support Burden
-
-Because the platform enforces a single configuration, the support burden does not scale with customer count. Every deployment behaves the same way, fails the same way, and is diagnosed the same way. This dramatically reduces the operational complexity of post-acquisition integration.
-
-### Clear Upgrade Paths
-
-When the platform evolves to architecture-v2.0.0, the migration path from v1.0.0 will be explicit, tested, and enforced. There will be no ambiguity about which features are deprecated, which APIs have changed, or which configurations are no longer supported. This predictability reduces the risk of post-acquisition platform evolution.
-
----
-
-## The Absence of Live Customers as a Feature
-
-Pre-revenue platforms are typically discounted because they lack market validation. However, an architecture-locked platform inverts this consideration in an important way.
-
-A platform with live enterprise customers has made commitments—explicit and implicit—to those customers' configurations. Any architectural change must account for backward compatibility with deployed instances. The platform's future is constrained by its past.
-
-A pre-revenue architecture-locked platform has made no such commitments. The architecture-v1.0.0 specification represents the platform's design intent without the technical debt of customer-specific accommodations. An acquirer inherits a clean architectural foundation rather than a compromised one.
-
-This is not an argument that customers are undesirable. It is an observation that the value of an architecture-locked platform is preserved—and in some ways enhanced—by the absence of configurations that might have compromised that architecture.
-
----
+Every external claim should identify its evidence link, tested commit, date, environment, limitations and accountable owner. Missing evidence remains an open diligence item. No revenue, valuation, buyer interest or validation result is invented here.
 
 ## Conclusion
 
-The Agentics platform's architecture-locked design is not merely a development methodology. It is a structural property that reduces integration risk, simplifies due diligence, and provides predictable post-acquisition behavior.
-
-Acquirers evaluating this platform should consider not just what the platform does, but how it ensures that it will continue to do exactly that—no more, no less—regardless of who operates it or how it is deployed.
-
-The frozen architecture-v1.0.0 specification is the platform's binding commitment to predictable behavior. That commitment has value independent of current revenue.
+Architecture governance is one inspectable component of diligence. Its value must be demonstrated alongside production evidence, customer outcomes and the buyer's requirements. Missing evidence remains an explicit open item.

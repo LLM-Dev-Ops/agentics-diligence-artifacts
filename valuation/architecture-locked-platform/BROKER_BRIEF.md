@@ -1,107 +1,59 @@
 # Broker Brief: Agentics Platform
 
-## Asset Classification
+## Asset classification and disclosure
 
-Pre-revenue AI orchestration platform with enforced architecture constraints. The platform implements a frozen architectural specification (architecture-v1.0.0) through automated CI governance rather than documentation-based guidelines.
+Existing materials describe a pre-revenue AI orchestration platform with architecture-v1.0.0 constraints and simulation capabilities. Paying customers, production deployments and recurring revenue are not established by this brief. Reconcile current records before external distribution.
 
----
+This is a proposed technology/IP transaction case. No customer-based valuation, premium, buyer commitment or acquisition readiness is asserted.
 
-## Key Differentiators
+## Potential value drivers requiring verification
 
-### Structural Risk Reduction
+- Reusable orchestration capabilities that address a named buyer's requirements.
+- Inspectable architecture specifications and effective CI controls.
+- Reproducible simulation and benchmark artifacts within documented limits.
+- Transferable source code and IP rights, subject to legal and license diligence.
+- Measurable development time and cost savings relative to equivalent build alternatives.
 
-Unlike typical enterprise software platforms that optimize for configuration flexibility, this platform enforces immutable architectural constraints. Integration risk is bounded by the platform's design rather than managed through implementation discipline.
+No customers means missing demand evidence. No implemented integrations means remaining delivery work. Neither absence is a premium factor by itself.
 
-**Practical implication**: Technical due diligence can focus on a single architectural specification rather than evaluating multiple deployment configurations.
+## Material risks
 
-### Enforcement Mechanism
+- Unproven willingness to pay, acquisition economics, retention and customer ROI.
+- Simulation fidelity and production reliability remain separate verification tasks.
+- Buyer deployment may require adapter development, security controls, data mapping, support and operational tooling.
+- Architecture constraints can limit buyer fit and require versioned changes.
+- IP ownership, third-party licenses, security findings and transfer obligations require verification.
 
-Architectural constraints are enforced through CI pipelines, not policies. Code that violates the architecture cannot be merged or deployed. This is a structural property of the development workflow, not a behavioral commitment.
+## Buyer profile
 
-**Practical implication**: Post-acquisition technical teams inherit a self-enforcing system rather than a set of guidelines that require ongoing discipline.
+Candidate strategic buyers need a specific capability, integration capacity and a credible commercialization plan. PE portfolio deployment requires workflow and integration validation for each relevant environment. These are candidate profiles, not evidence of buyer interest.
 
-### Portability Over Embedding
+## Evidence and commercial validation gate
 
-The platform is designed for organizational portability rather than deep embedding with a reference customer. Simulation capabilities model enterprise-scale organizations without requiring bespoke customer integrations.
+The existing materials describe the asset as pre-revenue with no live customer deployments. This revision does not independently certify the current customer count. Until reconciled contracts, invoices, receipts and deployment records establish otherwise, paying customers, revenue, retention, production readiness and customer ROI must be presented as unverified. Prospects, letters of intent, unpaid design partners, downloads and simulations must be reported separately from paying customers.
 
-**Practical implication**: The platform's value is not contingent on a single customer relationship that might not transfer with the asset.
+Before presenting a premium valuation or acquisition recommendation, assemble:
+- A narrow target customer, budget owner, costly workflow and competing alternatives, supported by documented customer discovery.
+- A paid pilot with written scope, price, success criteria and implementation responsibilities. Track signed contracts, invoiced amounts and collected cash separately.
+- Customer-accepted results against a baseline: time saved, error rate, operating cost and net benefit after compute, integration and support costs.
+- Production evidence for the scoped workflow: access controls, auditability, failure recovery, load limits, monitoring, rollback and incident ownership.
+- Evidence of repeat use, renewal or expansion over a stated observation period. A short pilot does not establish long-term retention.
+- An independently reproducible technical assessment, license and IP provenance review, and a buyer-specific build-versus-buy analysis including integration, maintenance and commercialization costs.
 
----
+Proposed owners are commercial lead for demand and paid pilots, engineering lead for production evidence, and transaction lead for buyer fit and IP diligence. Assign named owners and dates before execution; these roles and milestones are proposed, not completed.
 
-## Valuation Considerations
+Every external claim should identify its evidence link, tested commit, date, environment, limitations and accountable owner. Missing evidence remains an open diligence item. No revenue, valuation, buyer interest or validation result is invented here.
 
-### Pre-Revenue Premium Factors
+## Required diligence scope
 
-1. **Clean Architecture**: No customer-specific compromises or backward compatibility constraints
-2. **Bounded Integration Risk**: Deterministic behavior reduces post-acquisition uncertainty
-3. **Transferable Value**: Platform capabilities are demonstrated through simulation rather than customer-specific implementations
+Commercial diligence remains necessary despite pre-revenue status: validate the target problem, budget, alternatives, pricing hypotheses, route to market and remaining commercialization costs.
 
-### Pre-Revenue Discount Factors
+Technical diligence must inspect code, CI enforcement and bypass permissions, security, dependency posture, simulation assumptions, deployment behavior, failure handling and integrations. A single architecture version does not remove environmental variation or operational risk.
 
-1. **No Market Validation**: Revenue is theoretical pending commercial deployment
-2. **Execution Dependency**: Value realization requires go-to-market execution by acquirer
-3. **Technology Risk**: Platform capabilities are validated through simulation, not production
+Transaction diligence must establish IP and license provenance, contributor rights, liabilities, asset scope, required personnel, transfer process and post-transfer support. Estimate transfer complexity from an actual inventory and transition plan rather than assuming it is low.
 
----
+## Transaction materials
 
-## Buyer Profile
+Maintain a dated evidence register with links, owners and open items. Clearly distinguish existing assets from roadmap work and assumptions. Record confirmed customer contracts and revenue only after reconciliation; otherwise mark them unverified.
 
-### Strong Fit
-
-- Strategic acquirers with existing enterprise distribution seeking AI orchestration capabilities
-- PE firms with portfolio companies requiring agentic AI infrastructure
-- Technology companies seeking to accelerate internal platform development
-
-### Weak Fit
-
-- Acquirers requiring immediate revenue contribution
-- Organizations without technical capacity to complete go-to-market
-- Buyers seeking proven enterprise deployments as references
-
----
-
-## Due Diligence Scope
-
-Technical due diligence should focus on:
-
-1. **Architecture Specification**: Review of architecture-v1.0.0 constraints and enforcement mechanisms
-2. **CI Governance**: Validation that architectural constraints are structurally enforced
-3. **Simulation Fidelity**: Assessment of deterministic simulation capabilities
-4. **Dependency Posture**: Review of locked dependency configurations
-
-Technical due diligence does not require:
-
-1. Customer deployment analysis (none exist)
-2. Revenue model validation (pre-revenue)
-3. Multi-configuration testing (single enforced configuration)
-
----
-
-## Transaction Considerations
-
-### Asset Composition
-
-- Source code and architectural specifications
-- CI/CD pipeline configurations
-- Simulation frameworks and organizational models
-- Development tooling and CLI infrastructure
-
-### Not Included
-
-- Customer contracts or relationships (none exist)
-- Revenue streams (pre-revenue)
-- Deployment-specific configurations (architecturally prohibited)
-
-### Transfer Complexity
-
-Low. The architecture-locked design means the asset transfers as a complete, self-contained unit. There are no customer-specific configurations to migrate, no deployment variations to reconcile, and no support obligations to assume.
-
----
-
-## Summary
-
-This asset represents a pre-revenue AI orchestration platform with structurally enforced architectural constraints. The platform's value proposition is risk reduction through immutability rather than flexibility through configuration.
-
-Appropriate buyers are those with distribution capabilities seeking a clean architectural foundation for AI orchestration, rather than those seeking proven revenue or established customer relationships.
-
-The absence of live customers is a function of the platform's development stage and is offset by the absence of architectural compromises that typically accumulate during early commercialization.
+A transaction recommendation should explain buyer-specific strategic value, compare total build and buy costs, and disclose remaining technical and commercial risks. Architecture purity and simulation alone do not justify acquisition or a valuation premium.
